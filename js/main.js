@@ -3,11 +3,15 @@ import { setupPhysicsWorld } from './physics.js';
 import { setupEffects } from './effects.js';
 import { createTrack } from './track.js';
 import { createCar } from './car.js';
+import { createTrees } from './trees.js';
+import { createRocks } from './rocks.js';
+import { createLake } from './lake.js';
+import { createAnimals } from './animal.js';
 import { setupInputs, updateDrive } from './controls.js';
 import { updateGameLogic } from './gameLogic.js';
 import { state, gameState } from './state.js';
 
-function init() {
+export function init() {
     // UI refs
     state.timeDisplay = document.getElementById('time-value');
     state.speedDisplay = document.getElementById('speed-value');
@@ -28,6 +32,10 @@ function init() {
     setupPhysicsWorld();
     setupEffects();
     createTrack();
+    createTrees();
+    createRocks();
+    createLake();
+    createAnimals();
     createCar();
     setupInputs();
 
