@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Racing Game Prototype</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            user-select: none;
+        }
+
+        #game-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Heads Up Display (HUD) */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            text-shadow: 1px 1px 2px black;
+            pointer-events: none;
+        }
+
+        .hud-item {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ff3e3e;
+            display: flex;
+            align-items: center;
+            width: fit-content;
+        }
+
+        .hud-label {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #ccc;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .hud-value {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        /* Speedometer specific style */
+        #speed-gauge {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 70%);
+            border-radius: 50%;
+            border: 4px solid #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(255, 62, 62, 0.4);
+        }
+
+        #speed-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #fff;
+        }
+        #speed-unit {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        
+        /* Drift Indicator */
+        #drift-indicator {
+            position: absolute;
+            bottom: 200px;
+            right: 50px;
+            font-size: 2rem;
+            font-weight: 900;
+            color: #ffcc00;
+            font-style: italic;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.2s;
+            transform: rotate(-10deg);
+        }
+
+        /* Instruction Overlay */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 10;
+            transition: opacity 0.5s;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin: 0 0 20px 0;
+            color: #ff3e3e;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            font-style: italic;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .key {
+            width: 60px;
+            height: 60px;
+            border: 2px solid white;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .key.w { grid-column: 2; }
+        .key.a { grid-column: 1; }
+        .key.s { grid-column: 2; }
+        .key.d { grid-column: 3; }
+
+        .btn {
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            background: #ff3e3e;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            transform: scale(1.05);
+            background: #ff6666;
+        }
+        
+        #lap-message {
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            color: #ffcc00;
+            text-shadow: 0 0 20px rgba(255, 204, 0, 0.5);
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+            font-weight: 900;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Game Canvas Wrapper -->
+    <div id="game-container"></div>
+
+    <!-- UI Overlay -->
+    <div id="hud">
+        <div class="hud-item">
+            <span class="hud-label">Lap</span>
+            <span class="hud-value"><span id="lap-current">1</span> / <span id="lap-total">3</span></span>
+        </div>
+        <div class="hud-item">
+            <span class="hud-label">Time</span>
+            <span class="hud-value" id="time-value">00:00.00</span>
+        </div>
+    </div>
+
+    <div id="speed-gauge">
+        <div id="speed-value">0</div>
+        <div id="speed-unit">KM/H</div>
+    </div>
+    
+    <div id="drift-indicator">DRIFT!</div>
+
+    <div id="lap-message">LAP 2</div>
+
+    <div id="start-screen">
+        <h1>Turbo Proto</h1>
+        <p>Master the physics. Watch your speed.</p>
+        
+        <div class="controls">
+            <div class="key w">W</div>
+            <div class="key a">A</div>
+            <div class="key s">S</div>
+            <div class="key d">D</div>
+        </div>
+        <p style="margin-bottom: 20px; color: #aaa;">Use Arrow Keys or WASD to Drive</p>
+
+        <button class="btn" id="start-btn">Start Engine</button>
+    </div>
+
+    <!-- Modules Import -->
+    <script type="module" src="./js/main.js"></script>
+</body>
+</html>
